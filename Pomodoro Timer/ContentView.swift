@@ -105,31 +105,96 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Timer Settings")) {
-                    VStack {
-                        Text("Work Time: \(Int(workTime)) min")
-                        Slider(value: $workTime, in: 1...60, step: 1)
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack(spacing: 20) {
+                    List {
+                        Section {
+                            VStack(spacing: 15) {
+                                settingRow(
+                                    icon: "hourglass",
+                                    title: "Work Time",
+                                    value: "\(Int(workTime)) min",
+                                    color: .red
+                                ) {
+                                    Slider(value: $workTime, in: 1...60, step: 1)
+                                        .accentColor(.red)
+                                }
+                                
+                                settingRow(
+                                    icon: "cup.and.saucer.fill",
+                                    title: "Break Time",
+                                    value: "\(Int(breakTime)) min",
+                                    color: .green
+                                ) {
+                                    Slider(value: $breakTime, in: 1...30, step: 1)
+                                        .accentColor(.green)
+                                }
+                                
+                                settingRow(
+                                    icon: "repeat",
+                                    title: "Cycles",
+                                    value: "\(Int(cycles))",
+                                    color: .blue
+                                ) {
+                                    Slider(value: $cycles, in: 1...10, step: 1)
+                                        .accentColor(.blue)
+                                }
+                            }
+                            .padding(.vertical, 8)
+                        } header: {
+                            Text("Timer Settings")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                                .textCase(nil)
+                                .padding(.bottom, 8)
+                        }
                     }
-                    
-                    VStack {
-                        Text("Break Time: \(Int(breakTime)) min")
-                        Slider(value: $breakTime, in: 1...30, step: 1)
-                    }
-                    
-                    VStack {
-                        Text("Cycles: \(Int(cycles))")
-                        Slider(value: $cycles, in: 1...10, step: 1)
-                    }
+                    .listStyle(InsetGroupedListStyle())
                 }
             }
             .navigationTitle("Settings")
             .navigationBarItems(
-                trailing: Button("Done") {
+                trailing: Button(action: {
                     timerManager.updateSettings(workTime: Int(workTime), breakTime: Int(breakTime), cycles: Int(cycles))
                     isPresented = false
+                }) {
+                    Text("Done")
+                        .bold()
+                        .foregroundColor(.blue)
                 }
             )
+        }
+    }
+    
+    private func settingRow<Content: View>(
+        icon: String,
+        title: String,
+        value: String,
+        color: Color,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(color)
+                    .font(.system(size: 20))
+                    .frame(width: 30)
+                
+                Text(title)
+                    .font(.system(size: 17, weight: .medium))
+                
+                Spacer()
+                
+                Text(value)
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            
+            content()
+                .padding(.leading, 30)
         }
     }
 }
