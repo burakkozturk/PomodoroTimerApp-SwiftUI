@@ -2,20 +2,45 @@ import SwiftUI
 
 struct ColorSet {
     static let focusColors: [(start: Color, end: Color)] = [
-        (Color(red: 0.98, green: 0.29, blue: 0.25), Color(red: 0.90, green: 0.22, blue: 0.20)), // Kırmızı
-        (Color(red: 0.20, green: 0.60, blue: 0.86), Color(red: 0.10, green: 0.40, blue: 0.80)), // Mavi
-        (Color(red: 0.60, green: 0.35, blue: 0.71), Color(red: 0.45, green: 0.25, blue: 0.65)), // Mor
-        (Color(red: 1.00, green: 0.65, blue: 0.00), Color(red: 0.90, green: 0.55, blue: 0.00)), // Turuncu
-        (Color(red: 0.18, green: 0.18, blue: 0.18), Color(red: 0.10, green: 0.10, blue: 0.10)), // Siyah
+        (Color(hex: "cdb4db"), Color(hex: "cdb4db").opacity(0.8)), // Lila
+        (Color(hex: "a8dadc"), Color(hex: "a8dadc").opacity(0.8)), // Açık Mavi
+        (Color(hex: "1d3557"), Color(hex: "1d3557").opacity(0.8)), // Koyu Mavi
+        (Color(hex: "457b9d"), Color(hex: "457b9d").opacity(0.8)), // Mavi
     ]
     
     static let breakColors: [(start: Color, end: Color)] = [
-        (Color(red: 0.16, green: 0.71, blue: 0.46), Color(red: 0.10, green: 0.60, blue: 0.40)), // Yeşil
-        (Color(red: 0.90, green: 0.80, blue: 0.20), Color(red: 0.80, green: 0.70, blue: 0.10)), // Sarı
-        (Color(red: 0.87, green: 0.44, blue: 0.63), Color(red: 0.75, green: 0.35, blue: 0.55)), // Pembe
-        (Color(red: 0.40, green: 0.80, blue: 0.90), Color(red: 0.30, green: 0.70, blue: 0.85)), // Açık Mavi
-        (Color(red: 0.55, green: 0.90, blue: 0.77), Color(red: 0.45, green: 0.80, blue: 0.67)), // Turkuaz
+        (Color(hex: "e63946"), Color(hex: "e63946").opacity(0.8)), // Kırmızı
+        (Color(hex: "bde0fe"), Color(hex: "bde0fe").opacity(0.8)), // Açık Mavi
+        (Color(hex: "a2d2ff"), Color(hex: "a2d2ff").opacity(0.8)), // Mavi
+        (Color(hex: "ffc8dd"), Color(hex: "ffc8dd").opacity(0.8)), // Pembe
     ]
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue:  Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
 }
 
 struct TimerSettings: Codable {
@@ -40,12 +65,12 @@ class TimerManager: ObservableObject {
         self.isActive = false
         self.isWorkTime = true
         self.currentCycle = 1
-        self.currentColorIndex = Int.random(in: 0..<5)
+        self.currentColorIndex = Int.random(in: 0..<4)
     }
     
     func start() {
         isActive = true
-        currentColorIndex = Int.random(in: 0..<5)
+        currentColorIndex = Int.random(in: 0..<4)
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             if self.timeRemaining > 0 {
@@ -71,7 +96,7 @@ class TimerManager: ObservableObject {
     
     func switchMode() {
         isWorkTime.toggle()
-        currentColorIndex = Int.random(in: 0..<5)  // Her mod değişiminde yeni renk
+        currentColorIndex = Int.random(in: 0..<4)  // Her mod değişiminde yeni renk
         if isWorkTime {
             currentCycle += 1
             if currentCycle > settings.cycles {
